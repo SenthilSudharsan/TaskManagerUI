@@ -1,0 +1,154 @@
+<ng-template #content>
+  <button type="submit" mat-button mat-raised-button class="mr-2" value="createTask.TaskId" color="primary">
+    <mat-icon>{{'add'}}</mat-icon>Add Task</button>
+  <button type="button" mat-button mat-raised-button value="createTask.TaskId" (click)="Reset()" color="accent">
+    <mat-icon>{{'clear'}}</mat-icon>Reset</button>
+</ng-template>
+<ng-template #other_content>
+  <button type="submit" mat-button mat-raised-button class="mr-2" value="createTask.TaskId" color="primary">
+    <mat-icon>{{'add'}}</mat-icon>Update Task</button>
+  <button type="button" mat-button mat-raised-button value="createTask.TaskId" (click)="cancelUpdate()" color="warn">
+    <mat-icon>{{'cancel'}}</mat-icon>Cancel</button>
+</ng-template>
+<div class="example-container">
+  <mat-tab-group class="" [(selectedIndex)]="selectedTab" (selectedTabChange)="onTabClick($event)">
+    <mat-tab label="Add Task">
+      <div class="col-md-3 mt-4">
+        <form #CreateTask="ngForm" (ngSubmit)="onSubmit(CreateTask)">
+          <mat-form-field class="example-full-width">
+            <input matInput placeholder="Task Name" name="Task" [(ngModel)]="createTask.Task">
+            <input type="hidden" [(ngModel)]="createTask.TaskId" name="TaskId">
+            <mat-error *ngIf="TaskFormControl.hasError('required')">
+              Task Name is
+              <strong>required</strong>
+            </mat-error>
+          </mat-form-field>
+          <div>
+            <label style="color:rgba(0, 0, 0, 0.53);">Priority</label>
+            <mat-slider placeholder="Priority" style="width:90%;" [max]="30" [min]="0" [step]="1" [thumbLabel]="true" [tickInterval]="1"
+              [vertical]="false" [(ngModel)]="createTask.Priority" name="Priority">
+            </mat-slider>
+            <span class="text-small">30</span>
+          </div>
+          <mat-form-field class="example-full-width">
+            <!-- <input matInput placeholder="Parent Task" name="ParentTask" [(ngModel)]="createTask.ParentTask"> -->
+            <mat-select placeholder="Parent Task" [(ngModel)]="createTask.Parent_Id" name="Parent_Id">
+              <mat-option *ngFor="let parentTask of parentTasks" [value]="parentTask.Parent_Id">
+                {{parentTask.Parent_Task}}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+          <mat-form-field class="example-full-width">
+            <input matInput [matDatepicker]="picker2" name="StartDate" placeholder="Start Date" [(ngModel)]="createTask.StartDate">
+            <mat-datepicker-toggle matSuffix [for]="picker2"></mat-datepicker-toggle>
+            <mat-datepicker #picker2></mat-datepicker>
+            <mat-error *ngIf="StartFormControl.hasError('required')">
+              Start Date is
+              <strong>required</strong>
+            </mat-error>
+          </mat-form-field>
+          <mat-form-field class="example-full-width">
+            <input matInput [matDatepicker]="picker3" name="EndDate" placeholder="End Date" [(ngModel)]="createTask.EndDate">
+            <mat-datepicker-toggle matSuffix [for]="picker3"></mat-datepicker-toggle>
+            <mat-datepicker #picker3></mat-datepicker>
+            <mat-error *ngIf="EndFormControl.hasError('required')">
+              End Date is
+              <strong>required</strong>
+            </mat-error>
+          </mat-form-field>
+          <div *ngIf="createTask.IsCreate;then content else other_content" color="primary">
+          </div>
+        </form>
+      </div>
+    </mat-tab>
+    <mat-tab label="View Task">
+      <mat-card class="col-md-10 offset-md-1 mt-4">
+        <mat-card-header>
+          <mat-card-title>Search</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <form #SearchTask="ngForm">
+            <div class="col">
+              <mat-form-field class="col-md-6">
+                <input matInput placeholder="Task" name="Task" [(ngModel)]="searchTask.Task">
+              </mat-form-field>
+              <mat-form-field class="col-md-6">
+                <input matInput placeholder="Parent Task" name="ParentTask" [(ngModel)]="searchTask.ParentTask">
+              </mat-form-field>
+            </div>
+            <div class="col-md-12">
+
+              <mat-form-field class="col-md-3">
+                <input matInput placeholder="Priority From" name="PriorityFrom" [(ngModel)]="searchTask.PriorityFrom">
+              </mat-form-field>
+              <mat-form-field class="col-md-3">
+                <input matInput placeholder="Priority To" name="PriorityTo" [(ngModel)]="searchTask.PriorityTo">
+              </mat-form-field>
+
+              <mat-form-field class="col-md-3">
+                <input matInput [matDatepicker]="picker" placeholder="Start Date" name="StartDate" [(ngModel)]="searchTask.StartDate">
+                <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+                <mat-datepicker #picker></mat-datepicker>
+              </mat-form-field>
+              <mat-form-field class="col-md-3">
+                <input matInput [matDatepicker]="picker1" placeholder="End Date" name="EndDate" [(ngModel)]="searchTask.EndDate">
+                <mat-datepicker-toggle matSuffix [for]="picker1"></mat-datepicker-toggle>
+                <mat-datepicker #picker1></mat-datepicker>
+              </mat-form-field>
+            </div>
+            <div class="col-md-12">
+              <div class="col-md-3">
+                <button mat-button mat-raised-button color="warn" (click)="applyFilter()" color="primary">
+                  <mat-icon>{{'search'}}</mat-icon>Search</button>
+              </div>
+            </div>
+          </form>
+        </mat-card-content>
+      </mat-card>
+      <div class="col mt-3">
+        <mat-table #table [dataSource]="dataSource">
+
+          <ng-container matColumnDef="Task">
+            <mat-header-cell *matHeaderCellDef> Task </mat-header-cell>
+            <mat-cell *matCellDef="let Task"> {{Task.Task}} </mat-cell>
+          </ng-container>
+
+          <ng-container matColumnDef="ParentTask">
+            <mat-header-cell *matHeaderCellDef> ParentTask </mat-header-cell>
+            <mat-cell *matCellDef="let Task"> {{Task.ParentTask}} </mat-cell>
+          </ng-container>
+
+          <ng-container matColumnDef="Priority">
+            <mat-header-cell *matHeaderCellDef> Priority </mat-header-cell>
+            <mat-cell *matCellDef="let Task"> {{Task.Priority}} </mat-cell>
+          </ng-container>
+
+          <ng-container matColumnDef="Start Date">
+            <mat-header-cell *matHeaderCellDef> Start Date </mat-header-cell>
+            <mat-cell *matCellDef="let Task"> {{Task.StartDate | date:'dd-MM-yyyy' }} </mat-cell>
+          </ng-container>
+
+
+          <ng-container matColumnDef="End Date">
+            <mat-header-cell *matHeaderCellDef> End Date </mat-header-cell>
+            <mat-cell *matCellDef="let Task"> {{Task.EndDate | date:'dd-MM-yyyy'}} </mat-cell>
+          </ng-container>
+
+          <ng-container matColumnDef="Action">
+            <mat-header-cell *matHeaderCellDef> </mat-header-cell>
+            <mat-cell *matCellDef="let Task">
+              <div *ngIf="!Task.IsTaskEnded">
+                <button mat-button mat-raised-button class="mr-2" value="Task.TaskId" (click)="editTask(Task.TaskId)" color="primary">
+                  <mat-icon>{{'edit'}}</mat-icon>Edit</button>
+                <button mat-button mat-raised-button color="warn" value="Task.TaskId" (click)="endTask(Task.TaskId)" color="warn">
+                  <mat-icon>{{'cancel'}}</mat-icon>End Task</button>
+              </div>
+            </mat-cell>
+          </ng-container>
+          <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+          <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
+        </mat-table>
+      </div>
+    </mat-tab>
+  </mat-tab-group>
+</div>
